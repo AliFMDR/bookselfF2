@@ -11,6 +11,49 @@ document.addEventListener("DOMContentLoaded", function () {
   const searchBookForm = document.getElementById("searchBook");
   const searchBookTitleInput = document.getElementById("searchBookTitle");
 
+  // Membuat fungsi untuk menyimpan data buku ke dalam localStorage
+  function saveBooksToStorage() {
+    const incompleteBooks = Array.from(incompleteBookshelfList.children).map((bookItem) => {
+      return {
+        title: bookItem.querySelector("h3").textContent,
+        author: bookItem.querySelector("p:nth-child(2)").textContent,
+        year: bookItem.querySelector("p:nth-child(3)").textContent,
+        isComplete: false,
+      };
+    });
+
+    const completeBooks = Array.from(completeBookshelfList.children).map((bookItem) => {
+      return {
+        title: bookItem.querySelector("h3").textContent,
+        author: bookItem.querySelector("p:nth-child(2)").textContent,
+        year: bookItem.querySelector("p:nth-child(3)").textContent,
+        isComplete: true,
+      };
+    });
+
+    localStorage.setItem("incompleteBooks", JSON.stringify(incompleteBooks));
+    localStorage.setItem("completeBooks", JSON.stringify(completeBooks));
+  }
+
+  // Membuat fungsi untuk memuat data buku dari localStorage
+  function loadBooksFromStorage() {
+    const incompleteBooks = JSON.parse(localStorage.getItem("incompleteBooks")) || [];
+    const completeBooks = JSON.parse(localStorage.getItem("completeBooks")) || [];
+
+    incompleteBooks.forEach((book) => {
+      const bookItem = createBook(book.title, book.author, book.year, book.isComplete);
+      incompleteBookshelfList.appendChild(bookItem);
+    });
+
+    completeBooks.forEach((book) => {
+      const bookItem = createBook(book.title, book.author, book.year, book.isComplete);
+      completeBookshelfList.appendChild(bookItem);
+    });
+  }
+
+  // Memanggil fungsi untuk memuat data buku dari localStorage saat halaman dimuat
+  loadBooksFromStorage();
+
   inputBookForm.addEventListener("submit", function (e) {
     e.preventDefault();
     addBook();
@@ -81,6 +124,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     resetForm();
+
+    // Menyimpan data buku ke dalam localStorage
+    saveBooksToStorage();
   }
 
   function resetForm() {
@@ -104,11 +150,17 @@ document.addEventListener("DOMContentLoaded", function () {
         actionButton.textContent = "Belum selesai di Baca";
         incompleteBookshelfList.appendChild(bookItem);
       }
+
+      // Menyimpan data buku ke dalam localStorage setelah status berubah
+      saveBooksToStorage();
     }
   }
 
   function deleteBook(bookItem) {
     bookItem.remove();
+
+    // Menyimpan data buku ke dalam localStorage setelah buku dihapus
+    saveBooksToStorage();
   }
 
   function searchBook() {
